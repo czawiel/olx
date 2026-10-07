@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import base64
 import threading
 import streamlit as st
 from curl_cffi import requests
@@ -8,7 +9,7 @@ from PIL import Image
 
 CONFIG_FILE = "config.json"
 SEEN_CACHE_FILE = "seen_offers.json"
-LOGO_PATH = "logo.png"
+LOGO_PATH = "logo3.svg"
 README_PDF_PATH = "readme.pdf"
 
 SORT_OPTIONS = {
@@ -181,11 +182,21 @@ config = load_config()
 
 # --- PANEL BOCZNY (data-testid="stSidebarContent") ---
 with st.sidebar:
-    # 1. Logo na samej górze panelu bocznego
+    # 1. Logo na samej górze panelu bocznego (klikalne, prowadzi do http://fabryka.tech/)
     if os.path.exists(LOGO_PATH):
         try:
-            image = Image.open(LOGO_PATH)
-            st.image(image, use_container_width=True)
+            with open(LOGO_PATH, "rb") as f:
+                svg_base64 = base64.b64encode(f.read()).decode("utf-8")
+            st.markdown(
+                f"""
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <a href="http://fabryka.tech/" target="_blank" rel="noopener noreferrer">
+                        <img src="data:image/svg+xml;base64,{svg_base64}" style="max-width: 100%; height: auto;" alt="Logo" />
+                    </a>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
         except Exception as e:
             st.warning(f"Nie udało się wczytać logo: {e}")
 
@@ -251,6 +262,9 @@ with st.sidebar:
             )
     else:
         st.caption("ℹ️ Umieść plik `readme.pdf` w katalogu programu, aby udostępnić go do pobrania.")
+
+    st.markdown("Masz opinie, uwagi, komentarze?")
+    st.link_button("Formularz Kontaktowy", "https://fabryka.tech/kontakt", use_container_width=True)
 
 # --- GŁÓWNY WIDOK: 2 KOLUMNY ---
 col1, col2 = st.columns([1, 1], gap="large")
